@@ -1,6 +1,9 @@
 import numpy as np
 import torch
 
+MAX_VAL_8_BIT = 2**8 - 1
+MAX_VAL_12_BIT = 2**12 - 1
+
 def check_and_trans(x):
     if isinstance(x, torch.Tensor):
         return x.numpy()
@@ -12,12 +15,10 @@ def im2uint8(x:np.ndarray):
         x = x.clip(0.0, 1.0)*255
     return x.astype(np.uint8)
 
-
-
 def calculate_psnr(
     ground_truth: torch.Tensor, 
     predicted: torch.Tensor, 
-    value_range: int = 255,
+    value_range: int = MAX_VAL_12_BIT, # MST's code corresponding to set value_range = 255 (8 bit)
     per_band: bool = False
 ) -> torch.Tensor:
     """Calculates Peak Signal-to-Noise Ratio (PSNR).
@@ -42,7 +43,8 @@ def calculate_psnr(
 
 def calculate_sam(
     ground_truth: torch.Tensor, 
-    predicted: torch.Tensor
+    predicted: torch.Tensor,
+    value_range: int = MAX_VAL_12_BIT, # MST's code corresponding to set value_range = 255 (8 bit)
 ) -> torch.Tensor:
     """Calculates Spectral Angle Mapper (SAM) in degrees.
     
@@ -53,6 +55,9 @@ def calculate_sam(
     Returns:
         Mean SAM value in degrees
     """
+    ground_truth = (ground_truth.clip(0, 1) * value_range).round()
+    predicted = (predicted.clip(0, 1) * value_range).round()
+
     eps = 1e-6
     dot_product = torch.sum(ground_truth * predicted, dim=-1)
     norm_product = torch.sqrt(
