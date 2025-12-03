@@ -1,1 +1,0 @@
-Real data can be downloaded from [rTVRA](https://github.com/zspCoder/rTVRA-Release).
