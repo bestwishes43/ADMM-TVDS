@@ -1,57 +1,29 @@
 import torch
 import torch.nn.functional as F
 
-def grad(u:torch.Tensor, ndim:int=-1):
-    """Compute the gradient of u.
-    Args:
-        u (torch.Tensor): Input tensor.
-        ndim (int): Number of dimensions to compute the gradient for. 
-            If -1, it will use the number of dimensions of u.
-    Returns:
-        torch.Tensor: Gradient of u with shape (ndim, *u.shape).
+@torch.jit.script
+def diff_2d(u:torch.Tensor) -> torch.Tensor:
     """
-    ndim = u.ndim if ndim == -1 else ndim
-    assert ndim <= u.ndim and ndim > 0, "ndim should be in [1, u.ndim] or -1."
-    slice_all = [0, slice(None, -1)]
-    grad_u = torch.zeros([ndim, ] + list(u.shape), 
-                        dtype=u.dtype, device=u.device)
-    for d in range(ndim):
-        grad_u[tuple(slice_all)] = torch.diff(u, dim=d)
-        slice_all[0] = d + 1
-        slice_all.insert(1, slice(None))
-    return grad_u
-
-def div(p:torch.Tensor)->torch.Tensor:
-    """Compute the divergence of p.
-    Args:
-        p (torch.Tensor): Input tensor with shape (ndim, *).
-    Returns:
-        torch.Tensor: Divergence of p with shape (*).
+    u:[H, W, C]
+    返回：[2, H, W, C] 的差分张量
     """
-    return sum(p[d] - torch.roll(p[d], shifts=1, dims=d) for d in range(p.shape[0]))  # type: ignore
+    diff0 = torch.cat([u[1:, :] - u[:-1, :], torch.zeros_like(u[-1:, :])], dim=0)
+    diff1 = torch.cat([u[:, 1:] - u[:, :-1], torch.zeros_like(u[:, -1:])], dim=1)
+    diff_u = torch.stack([diff0, diff1], dim=0)
+    return diff_u
 
-
-def Diffusivity(x:torch.Tensor, dims:list[int]=[0]):
-    """Compute the diffusivity of x.
-    Args:
-        x (torch.Tensor): Input tensor.
-        dims (list[int]): Dimensions to compute the diffusivity for.
-    Returns:
-        torch.Tensor: Diffusivity of x.
+@torch.jit.script
+def div_2d(p:torch.Tensor) -> torch.Tensor:
     """
-    # D = oslash(1.0, x.norm(p='fro', dim=dims, keepdim=True))
-    # return D
-    return torch.where((D_norm := x.norm(p='fro', dim=dims, keepdim=True)) > 1e-12, 1.0 / D_norm, 0)
-
-def oslash(a, b:torch.Tensor):
-    """Compute the oslash operation. If b is zero, return 0.
-    Args:
-        a (torch.Tensor): Numerator tensor.
-        b (torch.Tensor): Denominator tensor.
-    Returns:
-        torch.Tensor: Result of $a \oslash b$.
+    p:[2, H, W, C]
+    返回：[H, W, C] 的散度张量
     """
-    return torch.where(b > 1e-12, a / b, 0)
+    p0, p1 = p[0], p[1]
+    p0_rolled = torch.cat([p0[-1:, :], p0[:-1, :]], dim=0)
+    p1_rolled = torch.cat([p1[:, -1:], p1[:, :-1]], dim=1)
+    
+    divp = (p0 - p0_rolled) + (p1 - p1_rolled)
+    return divp
 
 def shift(inputs:torch.Tensor, step:int, dim:int=1):
     """ Apply shear transformation to the input tensor along the specified dimension.

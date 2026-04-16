@@ -1,8 +1,12 @@
+import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from .common import check_and_trans
+def check_and_trans(x):
+    if isinstance(x, torch.Tensor):
+        return x.numpy()
+    return x
 
 def implay(images, vmax=None, vmin=None):
     images = check_and_trans(images)

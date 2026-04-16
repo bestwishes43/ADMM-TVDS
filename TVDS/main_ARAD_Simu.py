@@ -23,6 +23,8 @@ def parse():
     parser.add_argument('--rho', default=3e1, type=float, help="")
     parser.add_argument('--alpha', default=1e-1, type=float, help="")
     parser.add_argument('--beta', default=1.2, type=float, help="")
+    parser.add_argument('--rank', default=None, type=int, help="")
+    parser.add_argument('--use_net_init', default=False, type=bool, help="Align the spatial weight to cassi with network")
     args = parser.parse_args()
     return args
 
@@ -72,7 +74,7 @@ if __name__ == "__main__":
                 preds[i] = X_star.cpu()
                 truths[i] = truth.cpu()
             print("|AVG|{:.3f}|{:.4f}|{:.4f}|{:.4f}|".format(Metrics[:, 0].mean(), Metrics[:, 1].mean(), Metrics[:, 2].mean(), Metrics[:, 3].mean()))
-            # 保存结果
+            
             save_path = Path("./result/TVDS/ARAD")
             save_path.mkdir(parents=True, exist_ok=True)
             scio.savemat(save_path/("recon_"+test_case+"_"+split+".mat"), {"preds":preds, "truths":truths, "Metrics":Metrics})
