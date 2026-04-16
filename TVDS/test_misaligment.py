@@ -75,14 +75,15 @@ def parse():
     parser.add_argument('--shear_step', default=2, type=int, help="Shearing transformation step size.")
     parser.add_argument('--shear_dim', default=1, type=int, help="The dimension sheared.")
     
-    parser.add_argument('--K', default=30, type=int, help="")
-    parser.add_argument('--N', default=10, type=int, help="")
-    parser.add_argument('--n_stage', default=30, type=int, help="")
-    parser.add_argument('--mu', default=3e-2, type=float, help="")
-    parser.add_argument('--rho', default=3e-2, type=float, help="")
-    parser.add_argument('--alpha', default=1e-1, type=float, help="")
-    parser.add_argument('--beta', default=1.2, type=float, help="")
-    parser.add_argument('--use_net_init', default=True, type=bool, help="")
+    parser.add_argument('--K', default=30, type=int, help="Fixed Point Iterations for solving TV problem")
+    parser.add_argument('--N', default=10, type=int, help="ADMM Iterations")
+    parser.add_argument('--n_stage', default=30, type=int, help="Number of stages")
+    parser.add_argument('--mu', default=3e-2, type=float, help="TVDS regularization parameter")
+    parser.add_argument('--rho', default=3e-2, type=float, help="ADMM penalty parameter")
+    parser.add_argument('--alpha', default=1e-1, type=float, help="regularization parameter for initialization")
+    parser.add_argument('--beta', default=1.2, type=float, help="rho growth parameter")
+    parser.add_argument('--rank', default=None, type=int, help="The rank of subspace (3 for rgb, 1 for pan), if use_net_init, it could be higher.")
+    parser.add_argument('--use_net_init', default=True, type=bool, help="Align the spatial weight to cassi with network") 
 
     args = parser.parse_args()
     return args

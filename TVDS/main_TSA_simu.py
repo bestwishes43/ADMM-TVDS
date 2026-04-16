@@ -24,6 +24,8 @@ def parse():
     parser.add_argument('--rho', default=3e-2, type=float, help="")
     parser.add_argument('--alpha', default=1e-1, type=float, help="")
     parser.add_argument('--beta', default=1.2, type=float, help="")
+    parser.add_argument('--rank', default=None, type=int, help="")
+    parser.add_argument('--use_net_init', default=False, type=bool, help="Align the spatial weight to cassi with network")
     args = parser.parse_args()
     return args
 

@@ -105,7 +105,7 @@ def pipeline(
         T_CA[None]*w_kron_I_tensor, 
         args.shear_step, 
         args.shear_dim + 1
-    ).sum(dim=-1).reshape(rank*C, -1).T # [H(W+s(C-1)), rank*C]
+    ).sum(dim=-1).reshape(rank*args.nbands, -1).T # [H(W+s(C-1)), rank*C]
     
     # Solve weighted least squares problem
     sqrt_Lambda_plus_alpha = (Lambda + args.alpha) ** 0.5
